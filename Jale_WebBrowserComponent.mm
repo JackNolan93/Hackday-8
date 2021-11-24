@@ -1,8 +1,16 @@
+// clang-format off
+
 #include "JaLe_WebBrowserComponent.h"
 
+#import <Foundation/Foundation.h>
+#import <objc/objc-runtime.h>
 #import <WebKit/WebKit.h>
+
 #include <juce_core/juce_core.h>
 #include <juce_core/native/juce_mac_ObjCHelpers.h>
+#import <juce_gui_extra/embedding/juce_NSViewComponent.h>
+
+// clang-format on
 
 #if JUCE_IOS || \
     (defined(MAC_OS_X_VERSION_10_10) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10)
@@ -31,9 +39,9 @@ static NSURL * appendParametersToFileURL (const juce::URL & url, NSURL * fileUrl
     if (parameterNames.isEmpty ())
         return fileUrl;
 
-    NSUniquePtr<NSURLComponents> components ([[NSURLComponents alloc] initWithURL:fileUrl
-                                                          resolvingAgainstBaseURL:NO]);
-    NSUniquePtr<NSMutableArray> queryItems ([[NSMutableArray alloc] init]);
+    juce::NSUniquePtr<NSURLComponents> components ([[NSURLComponents alloc] initWithURL:fileUrl
+                                                                resolvingAgainstBaseURL:NO]);
+    juce::NSUniquePtr<NSMutableArray> queryItems ([[NSMutableArray alloc] init]);
 
     for (int i = 0; i < parameterNames.size (); ++i)
         [queryItems.get ()
@@ -79,7 +87,7 @@ static NSMutableURLRequest * getRequestForURL (const juce::String & url,
 
         if (postData != nullptr && postData->getSize () > 0)
         {
-            [r setHTTPMethod:nsStringLiteral ("POST")];
+            [r setHTTPMethod:juce::nsStringLiteral ("POST")];
             [r setHTTPBody:[NSData dataWithBytes:postData->getData () length:postData->getSize ()]];
         }
 
@@ -154,7 +162,7 @@ private:
 
 #if JUCE_USE_WKWEBVIEW
 
-struct WebViewDelegateClass : public ObjCClass<NSObject>
+struct WebViewDelegateClass : public juce::ObjCClass<NSObject>
 {
     WebViewDelegateClass ()
         : ObjCClass<NSObject> ("JUCEWebViewDelegate_")
@@ -195,7 +203,7 @@ struct WebViewDelegateClass : public ObjCClass<NSObject>
     }
     static WebBrowserComponent * getOwner (id self)
     {
-        return getIvar<WebBrowserComponent *> (self, "owner");
+        return juce::getIvar<WebBrowserComponent *> (self, "owner");
     }
 
 private:
@@ -206,7 +214,7 @@ private:
                                                  void (^decisionHandler) (WKNavigationActionPolicy))
     {
         if (getOwner (self)->pageAboutToLoad (
-                nsStringToJuce ([[[navigationAction request] URL] absoluteString])))
+                juce::nsStringToJuce ([[[navigationAction request] URL] absoluteString])))
             decisionHandler (WKNavigationActionPolicyAllow);
         else
             decisionHandler (WKNavigationActionPolicyCancel);
@@ -214,14 +222,15 @@ private:
 
     static void didFinishNavigation (id self, SEL, WKWebView * webview, WKNavigation *)
     {
-        getOwner (self)->pageFinishedLoading (nsStringToJuce ([[webview URL] absoluteString]));
+        getOwner (self)->pageFinishedLoading (
+            juce::nsStringToJuce ([[webview URL] absoluteString]));
     }
 
     static void displayError (WebBrowserComponent * owner, NSError * error)
     {
         if ([error code] != NSURLErrorCancelled)
         {
-            auto errorString = nsStringToJuce ([error localizedDescription]);
+            auto errorString = juce::nsStringToJuce ([error localizedDescription]);
             bool proceedToErrorPage = owner->pageLoadHadNetworkError (errorString);
 
             // WKWebView doesn't have an internal error page, so make a really simple one ourselves
@@ -256,7 +265,7 @@ private:
                                       WKWindowFeatures *)
     {
         getOwner (self)->newWindowAttemptingToLoad (
-            nsStringToJuce ([[[navigationAction request] URL] absoluteString]));
+            juce::nsStringToJuce ([[[navigationAction request] URL] absoluteString]));
         return nil;
     }
 
@@ -270,10 +279,11 @@ private:
     {
         using CompletionHandlerType = decltype (completionHandler);
 
-        class DeletedFileChooserWrapper : private DeletedAtShutdown
+        class DeletedFileChooserWrapper : private juce::DeletedAtShutdown
         {
         public:
-            DeletedFileChooserWrapper (std::unique_ptr<FileChooser> fc, CompletionHandlerType h)
+            DeletedFileChooserWrapper (std::unique_ptr<juce::FileChooser> fc,
+                                       CompletionHandlerType h)
                 : chooser (std::move (fc))
                 , handler (h)
             {
@@ -295,33 +305,34 @@ private:
                 handlerCalled = true;
             }
 
-            std::unique_ptr<FileChooser> chooser;
+            std::unique_ptr<juce::FileChooser> chooser;
 
         private:
             CompletionHandlerType handler;
             bool handlerCalled = false;
         };
 
-        auto chooser =
-            std::make_unique<FileChooser> (TRANS ("Select the file you want to upload..."),
-                                           File::getSpecialLocation (File::userHomeDirectory),
-                                           "*");
+        auto chooser = std::make_unique<juce::FileChooser> (
+            TRANS ("Select the file you want to upload..."),
+            juce::File::getSpecialLocation (juce::File::userHomeDirectory),
+            "*");
         auto * wrapper = new DeletedFileChooserWrapper (std::move (chooser), completionHandler);
 
-        auto flags =
-            FileBrowserComponent::openMode | FileBrowserComponent::canSelectFiles |
-            ([parameters allowsMultipleSelection] ? FileBrowserComponent::canSelectMultipleItems
-                                                  : 0);
+        auto flags = juce::FileBrowserComponent::openMode |
+                     juce::FileBrowserComponent::canSelectFiles |
+                     ([parameters allowsMultipleSelection]
+                          ? juce::FileBrowserComponent::canSelectMultipleItems
+                          : 0);
 
         #if (defined(MAC_OS_X_VERSION_10_14) && \
              MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_14)
         if ([parameters allowsDirectories])
-            flags |= FileBrowserComponent::canSelectDirectories;
+            flags |= juce::FileBrowserComponent::canSelectDirectories;
         #endif
 
         wrapper->chooser->launchAsync (
             flags,
-            [wrapper] (const FileChooser &)
+            [wrapper] (const juce::FileChooser &)
             {
                 auto results = wrapper->chooser->getResults ();
                 auto urls = [NSMutableArray arrayWithCapacity:(NSUInteger) results.size ()];
@@ -339,7 +350,7 @@ private:
 //==============================================================================
 class WebBrowserComponent::Pimpl
     #if JUCE_MAC
-    : public NSViewComponent
+    : public juce::NSViewComponent
     #else
     : public UIViewComponent
     #endif
@@ -378,7 +389,7 @@ public:
 
     void goToURL (const juce::String & url,
                   const juce::StringArray * headers,
-                  const MemoryBlock * postData)
+                  const juce::MemoryBlock * postData)
     {
         auto trimmed = url.trimStart ();
 
@@ -395,9 +406,10 @@ public:
 
         if (trimmed.startsWithIgnoreCase ("file:"))
         {
-            auto file = URL (url).getLocalFile ();
+            auto file = juce::URL (url).getLocalFile ();
 
-            if (NSURL * nsUrl = [NSURL fileURLWithPath:juceStringToNS (file.getFullPathName ())])
+            if (NSURL * nsUrl =
+                    [NSURL fileURLWithPath:juce::juceStringToNS (file.getFullPathName ())])
                 [webView loadFileURL:appendParametersToFileURL (url, nsUrl)
                     allowingReadAccessToURL:nsUrl];
         }
@@ -803,7 +815,9 @@ WebBrowserComponent::WebBrowserComponent (bool unloadWhenHidden)
     addAndMakeVisible (browser.get ());
 }
 
-WebBrowserComponent::WebBrowserComponent (bool unloadWhenHidden, const File &, const File &)
+WebBrowserComponent::WebBrowserComponent (bool unloadWhenHidden,
+                                          const juce::File &,
+                                          const juce::File &)
     : WebBrowserComponent (unloadWhenHidden)
 {
 }
@@ -815,7 +829,7 @@ WebBrowserComponent::~WebBrowserComponent ()
 //==============================================================================
 void WebBrowserComponent::goToURL (const juce::String & url,
                                    const juce::StringArray * headers,
-                                   const MemoryBlock * postData)
+                                   const juce::MemoryBlock * postData)
 {
     lastURL = url;
 
@@ -858,7 +872,7 @@ void WebBrowserComponent::refresh ()
 }
 
 //==============================================================================
-void WebBrowserComponent::paint (Graphics &)
+void WebBrowserComponent::paint (juce::Graphics &)
 {
 }
 
