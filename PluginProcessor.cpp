@@ -64,11 +64,11 @@ bool AudioPluginAudioProcessor::isMidiEffect () const
 void AudioPluginAudioProcessor::setCutoff (float cutoff)
 {
     *_cutoff = cutoff;
-    
+
     if (_prevCutoff != _cutoff->get ())
     {
         _svFilter.setCutoffFrequency ((_cutoff->get () * 20000.f) + 20.f);
-        _prevCutoff =_cutoff->get ();
+        _prevCutoff = _cutoff->get ();
     }
 }
 
@@ -77,7 +77,6 @@ void AudioPluginAudioProcessor::setq (float q)
     *_q = q;
     _svFilter.setResonance (_q->get () * 5.f);
 }
-
 
 double AudioPluginAudioProcessor::getTailLengthSeconds () const
 {
@@ -118,13 +117,12 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = juce::uint32 (samplesPerBlock);
     spec.numChannels = juce::uint32 (getTotalNumInputChannels ());
-    
+
     _svFilter.prepare (spec);
-    
+
     _svFilter.setType (juce::dsp::StateVariableTPTFilterType::lowpass);
     _svFilter.setCutoffFrequency (5000.f);
     _svFilter.setResonance (1.f);
-    
 }
 
 void AudioPluginAudioProcessor::releaseResources ()
@@ -165,13 +163,13 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float> & buffer,
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels ();
     auto totalNumOutputChannels = getTotalNumOutputChannels ();
-    
+
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples ());
 
     juce::dsp::AudioBlock<float> block (buffer);
-    juce::dsp::ProcessContextReplacing <float> context (block);
-    
+    juce::dsp::ProcessContextReplacing<float> context (block);
+
     _svFilter.process (context);
 }
 

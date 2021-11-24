@@ -35,7 +35,7 @@ const App = () => {
         options={ParticlesConfig}
         className="background_poly"
         loaded={() => {
-          console.log("Loaded mask.");
+          //console.log("Loaded mask.");
         }}
       />
 
