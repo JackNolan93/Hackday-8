@@ -14,8 +14,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible (_browserComponent);
     _browserComponent.setBounds (getLocalBounds ());
-        
-    juce::URL indexUrl (juce::File ("/Users/jacknolan/Developer/Hackday-8/index.html"));
+
+    _browserComponent.addScriptHandler (
+        "JaLeInterop", [] (juce::String body) { juce::Logger::writeToLog (body); });
+
+    juce::URL indexUrl (
+        juce::File ("/Users/leonpaterson-stephens/Documents/Development/Hackday-8/index.html"));
     _browserComponent.goToURL (indexUrl.toString (false));
 }
 

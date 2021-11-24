@@ -352,9 +352,9 @@ struct JaLeScriptHandler : public juce::ObjCClass<NSObject>
     JaLeScriptHandler ()
         : ObjCClass<NSObject> ("JaLeScriptHandler")
     {
-        addIvar<WebBrowserComponent*>("owner");
-        addIvar<WKWebView*>("webView");
-        
+        addIvar<WebBrowserComponent *> ("owner");
+        addIvar<WKWebView *> ("webView");
+
         addMethod (@selector (userContentController:didReceiveScriptMessage:),
                    didRecieveScriptMessage,
                    "v@:@@");
@@ -362,21 +362,42 @@ struct JaLeScriptHandler : public juce::ObjCClass<NSObject>
         registerClass ();
     }
 
-    static void
-    didRecieveScriptMessage (id self, SEL, WKUserContentController * controller, WKScriptMessage * message)
+    static void didRecieveScriptMessage (id self,
+                                         SEL,
+                                         WKUserContentController * controller,
+                                         WKScriptMessage * message)
     {
         juce::ignoreUnused (self, controller);
-        juce::Logger::writeToLog (juce::nsStringToJuce ([[NSString alloc] initWithFormat:@"body %@ name %@", message.body, message.name]));
 
-        if([message.name isEqualToString:@"JaLeInterop"]) {
+        /*
+        juce::ignoreUnused (self, controller);
+        juce::Logger::writeToLog (juce::nsStringToJuce (
+            [[NSString alloc] initWithFormat:@"body %@ name %@", message.body, message.name]));
 
+        if ([message.name isEqualToString:@"JaLeInterop"])
+        {
             juce::Logger::writeToLog ("did it");
-            [getWebView(self) evaluateJavaScript:@"fromApp();" completionHandler:nil];
+            [getWebView (self) evaluateJavaScript:@"fromApp();" completionHandler:nil];
         }
-        
-        if([message.name isEqualToString:@"JaLeInteropReturn"]) {
 
+        if ([message.name isEqualToString:@"JaLeInteropReturn"])
+        {
             juce::Logger::writeToLog ("returned it");
+        }
+         */
+        WebBrowserComponent * browserComponent = getOwner (self);
+
+        if (browserComponent->_handlers.contains (juce::nsStringToJuce (message.name)))
+        {
+            if (browserComponent->_handlers [juce::nsStringToJuce (message.name)])
+            {
+                browserComponent->_handlers [juce::nsStringToJuce (message.name)](
+                    juce::nsStringToJuce (message.body));
+            }
+        }
+        else
+        {
+            jassertfalse;
         }
     }
 
@@ -384,17 +405,17 @@ struct JaLeScriptHandler : public juce::ObjCClass<NSObject>
     {
         object_setInstanceVariable (self, "owner", owner);
     }
-    
+
     static WebBrowserComponent * getOwner (id self)
     {
         return juce::getIvar<WebBrowserComponent *> (self, "owner");
     }
-    
+
     static void setWebView (id self, WKWebView * webView)
     {
         object_setInstanceVariable (self, "webView", webView);
     }
-    
+
     static WKWebView * getWebView (id self)
     {
         return juce::getIvar<WKWebView *> (self, "webView");
@@ -415,21 +436,25 @@ public:
     #if JUCE_MAC
         static WebViewKeyEquivalentResponder webviewClass;
         webView = (WKWebView *) webviewClass.createInstance ();
-        
-        WKWebViewConfiguration* webConfiguration = [[WKWebViewConfiguration alloc] init];
+
+        WKWebViewConfiguration * webConfiguration = [[WKWebViewConfiguration alloc] init];
         webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:webConfiguration];
-        
+
         static JaLeScriptHandler jaleScriptHandler;
-        scriptHandler = [jaleScriptHandler.createInstance() init];
+        scriptHandler = [jaleScriptHandler.createInstance () init];
         JaLeScriptHandler::setOwner (scriptHandler, owner);
         JaLeScriptHandler::setWebView (scriptHandler, webView);
 
-        [webView.configuration.userContentController addScriptMessageHandler:scriptHandler name:@"JaLeInterop"];
-        [webView.configuration.userContentController addScriptMessageHandler:scriptHandler name:@"JaLeInteropReturn"];
+            /*
+            [webView.configuration.userContentController addScriptMessageHandler:scriptHandler
+                                                                            name:@"JaLeInterop"];
+            [webView.configuration.userContentController addScriptMessageHandler:scriptHandler
+                                                                            name:@"JaLeInteropReturn"];
+                                                                            */
     #else
         webView = [[WKWebView alloc] initWithFrame:CGRectMake (0, 0, 100.0f, 100.0f)];
     #endif
-       
+
         static WebViewDelegateClass cls;
         webViewDelegate = [cls.createInstance () init];
         WebViewDelegateClass::setOwner (webViewDelegate, owner);
@@ -498,6 +523,13 @@ public:
     void refresh ()
     {
         [webView reload];
+    }
+
+    void addScriptHandler (juce::String handlerName)
+    {
+        [webView.configuration.userContentController
+            addScriptMessageHandler:scriptHandler
+                               name:juce::juceStringToNS (handlerName)];
     }
 
 private:
@@ -1004,4 +1036,11 @@ void WebBrowserComponent::clearCookies ()
     }
 
     [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+void WebBrowserComponent::addScriptHandler (juce::String handlerName,
+                                            std::function<void (juce::String)> handler)
+{
+    _handlers.insert ({handlerName, handler});
+    browser->addScriptHandler (handlerName);
 }

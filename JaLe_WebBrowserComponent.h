@@ -45,6 +45,8 @@ public:
     /** Refreshes the browser. */
     void refresh ();
 
+    void addScriptHandler (juce::String handlerName, std::function<void (juce::String)> handler);
+
     /** Clear cookies that the OS has stored for the WebComponents of this application */
     static void clearCookies ();
 
@@ -114,6 +116,8 @@ public:
 
     /** @internal */
     class Pimpl;
+
+    std::map<juce::String, std::function<void (juce::String)>> _handlers;
 
 private:
     //==============================================================================
