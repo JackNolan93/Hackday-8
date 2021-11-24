@@ -2,3 +2,9 @@
 cmake-build-debug
 CMakeFiles
 _deps
+
+CMakeCache.txt
+cmake_install.cmake
+hackday-8.xcodeproj
+hackday-8_artefacts
+CMakeScripts
