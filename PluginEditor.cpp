@@ -16,10 +16,17 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     _browserComponent.setBounds (getLocalBounds ());
 
     _browserComponent.addScriptHandler (
-    "JaLeInterop", [this] (juce::String body)
+    "set_q", [this] (juce::String body)
     {
-        processorRef.setCutoff (0.0001f);
-        juce::Logger::writeToLog (body);
+        processorRef.setq (body.getFloatValue ());
+        juce::Logger::writeToLog ("q value: " + body);
+    });
+    
+    _browserComponent.addScriptHandler (
+    "set_cutoff", [this] (juce::String body)
+    {
+        processorRef.setCutoff (body.getFloatValue ());
+        juce::Logger::writeToLog ("cutoff value: " + body);
     });
     
     _browserComponent.addScriptHandler (
