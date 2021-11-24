@@ -17,6 +17,11 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor ()
                                                            "Cutoff",                                      // parameter name
                                                            juce::NormalisableRange<float> (0.0f, 1.0f), // parameter range
                                                            0.5f));
+    
+    addParameter (_q = new juce::AudioParameterFloat ("q",                                      // parameter ID
+                                                      "Resonance",                                 // parameter name
+                                                      juce::NormalisableRange<float> (0.0f, 1.0f), // parameter range
+                                                      0.5f));
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor ()
@@ -117,7 +122,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     _svFilter.prepare (spec);
     
     _svFilter.setType (juce::dsp::StateVariableTPTFilterType::lowpass);
-    _svFilter.setCutoffFrequency (50000.f);
+    _svFilter.setCutoffFrequency (5000.f);
     _svFilter.setResonance (1.f);
     
 }
