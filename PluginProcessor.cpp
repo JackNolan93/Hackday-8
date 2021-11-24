@@ -15,7 +15,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor ()
 {
     addParameter (_cutoff = new juce::AudioParameterFloat ("cutoff",                                      // parameter ID
                                                            "Cutoff",                                      // parameter name
-                                                           juce::NormalisableRange<float> (0.0f, 1.0f), // parameter range
+                                                           juce::NormalisableRange<float> (0.0f, 1.0f, 0.0001f, 5.f), // parameter range
                                                            0.5f));
     
     addParameter (_q = new juce::AudioParameterFloat ("q",                                      // parameter ID
@@ -75,7 +75,7 @@ void AudioPluginAudioProcessor::setCutoff (float cutoff)
 void AudioPluginAudioProcessor::setq (float q)
 {
     *_q = q;
-    _svFilter.setResonance (_q->get () * 5.f);
+    _svFilter.setResonance ((_q->get () * 5.f) + 0.1f);
 }
 
 double AudioPluginAudioProcessor::getTailLengthSeconds () const
