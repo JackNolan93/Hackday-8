@@ -5,8 +5,12 @@
     <title>JaLe - Web</title>
 
     <script>
-        function handleButtonClick () {
+        function handleButtonClick() {
             window.webkit.messageHandlers.JaLeInterop.postMessage("FirstMessage");
+        };
+
+        function fromApp() {
+            window.webkit.messageHandlers.JaLeInteropReturn.postMessage("SecondMessage");
         };
     </script>
 </head>

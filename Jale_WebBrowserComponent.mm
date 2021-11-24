@@ -352,18 +352,52 @@ struct JaLeScriptHandler : public juce::ObjCClass<NSObject>
     JaLeScriptHandler ()
         : ObjCClass<NSObject> ("JaLeScriptHandler")
     {
+        addIvar<WebBrowserComponent*>("owner");
+        addIvar<WKWebView*>("webView");
+        
         addMethod (@selector (userContentController:didReceiveScriptMessage:),
                    didRecieveScriptMessage,
-                   "v@:@");
+                   "v@:@@");
 
         registerClass ();
     }
 
     static void
-    didRecieveScriptMessage (id self, SEL, WKScriptMessage * scriptMessage)
+    didRecieveScriptMessage (id self, SEL, WKUserContentController * controller, WKScriptMessage * message)
     {
-        juce::ignoreUnused (self, scriptMessage);
-        juce::Logger::writeToLog ("did it");
+        juce::ignoreUnused (self, controller);
+        juce::Logger::writeToLog (juce::nsStringToJuce ([[NSString alloc] initWithFormat:@"body %@ name %@", message.body, message.name]));
+
+        if([message.name isEqualToString:@"JaLeInterop"]) {
+
+            juce::Logger::writeToLog ("did it");
+            [getWebView(self) evaluateJavaScript:@"fromApp();" completionHandler:nil];
+        }
+        
+        if([message.name isEqualToString:@"JaLeInteropReturn"]) {
+
+            juce::Logger::writeToLog ("returned it");
+        }
+    }
+
+    static void setOwner (id self, WebBrowserComponent * owner)
+    {
+        object_setInstanceVariable (self, "owner", owner);
+    }
+    
+    static WebBrowserComponent * getOwner (id self)
+    {
+        return juce::getIvar<WebBrowserComponent *> (self, "owner");
+    }
+    
+    static void setWebView (id self, WKWebView * webView)
+    {
+        object_setInstanceVariable (self, "webView", webView);
+    }
+    
+    static WKWebView * getWebView (id self)
+    {
+        return juce::getIvar<WKWebView *> (self, "webView");
     }
 };
 
@@ -387,9 +421,11 @@ public:
         
         static JaLeScriptHandler jaleScriptHandler;
         scriptHandler = [jaleScriptHandler.createInstance() init];
-        
-        [webView.configuration.userContentController addScriptMessageHandler:scriptHandler name:@"JaLeInterop"];
+        JaLeScriptHandler::setOwner (scriptHandler, owner);
+        JaLeScriptHandler::setWebView (scriptHandler, webView);
 
+        [webView.configuration.userContentController addScriptMessageHandler:scriptHandler name:@"JaLeInterop"];
+        [webView.configuration.userContentController addScriptMessageHandler:scriptHandler name:@"JaLeInteropReturn"];
     #else
         webView = [[WKWebView alloc] initWithFrame:CGRectMake (0, 0, 100.0f, 100.0f)];
     #endif
