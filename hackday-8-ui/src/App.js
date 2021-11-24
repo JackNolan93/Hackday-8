@@ -31,13 +31,7 @@ const App = () => {
 
   return (
     <ChakraProvider>
-      <Particles
-        options={ParticlesConfig}
-        className="background_poly"
-        loaded={() => {
-          //console.log("Loaded mask.");
-        }}
-      />
+      <Particles options={ParticlesConfig} className="background_poly" />
 
       <Center h="100vh" color="white">
         <VStack spacing={4} align="stretch">
