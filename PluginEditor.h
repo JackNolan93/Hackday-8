@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JaLe_WebBrowserComponent.h"
 #include "PluginProcessor.h"
 
 //==============================================================================

@@ -31,6 +31,11 @@ juce_add_plugin(hackday-8
         FORMATS AU VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
         PRODUCT_NAME "Hackday8")        # The name of the final executable, which can differ from the target name
 
+set(PLATFORM_SOURCES "")
+if (APPLE)
+    list(APPEND PLATFORM_SOURCES Jale_WebBrowserComponent.mm)
+endif ()
+
 target_compile_options(hackday-8 PRIVATE -Wall -Wextra -Werror)
 
 target_sources(hackday-8
@@ -38,12 +43,15 @@ target_sources(hackday-8
         PluginEditor.cpp
         PluginEditor.h
         PluginProcessor.cpp
-        PluginProcessor.h)
+        PluginProcessor.h
+        JaLe_WebBrowserComponent.h
+        ${PLATFORM_SOURCES})
 
 target_link_libraries(hackday-8
         PRIVATE
         juce::juce_core
         juce::juce_audio_utils
+        juce::juce_gui_basics
         PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_warning_flags
