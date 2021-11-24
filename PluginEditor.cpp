@@ -20,7 +20,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     _browserComponent.addScriptHandler (
         "JaLeInteropReturn", [] (juce::String body) { juce::Logger::writeToLog (body); });
 
-    juce::URL indexUrl (juce::File ("/Users/jacknolan/Developer/Hackday-8/index.html"));
+    juce::URL indexUrl (juce::File (
+        "/Users/leonpaterson-stephens/Documents/Development/Hackday-8/hackday-8-ui/build/index.html"));
     _browserComponent.goToURL (indexUrl.toString (false));
 }
 
