@@ -19,7 +19,16 @@ import {
 
 import { MdGraphicEq } from "react-icons/md";
 
+import { useJaLeParameterInterop } from "./JaLeHooks";
+
 const App = () => {
+  const [paramValueQ, setParamValueQ] = useJaLeParameterInterop("set_q", 0);
+
+  const [paramValueCutoff, setParamValueCutoff] = useJaLeParameterInterop(
+    "set_cutoff",
+    0
+  );
+
   return (
     <ChakraProvider>
       <Particles
@@ -34,7 +43,17 @@ const App = () => {
         <VStack spacing={4} align="stretch">
           <FormControl id="q_control">
             <FormLabel>Q</FormLabel>
-            <Slider aria-label="slider-ex-4" defaultValue={30}>
+            <Slider
+              aria-label="slider-ex-4"
+              defaultValue={30}
+              value={paramValueQ}
+              min={0}
+              max={1}
+              step={0.001}
+              onChange={(val) => {
+                setParamValueQ(val);
+              }}
+            >
               <SliderTrack bg="red.100">
                 <SliderFilledTrack bg="tomato" />
               </SliderTrack>
@@ -46,7 +65,17 @@ const App = () => {
           </FormControl>
           <FormControl id="cutoff_control">
             <FormLabel>Cutoff</FormLabel>
-            <Slider aria-label="slider-ex-4" defaultValue={30}>
+            <Slider
+              aria-label="slider-ex-4"
+              defaultValue={30}
+              value={paramValueCutoff}
+              min={0}
+              max={1}
+              step={0.001}
+              onChange={(val) => {
+                setParamValueCutoff(val);
+              }}
+            >
               <SliderTrack bg="red.100">
                 <SliderFilledTrack bg="tomato" />
               </SliderTrack>
