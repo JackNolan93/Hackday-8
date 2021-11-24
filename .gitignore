@@ -8,3 +8,4 @@ cmake_install.cmake
 hackday-8.xcodeproj
 hackday-8_artefacts
 CMakeScripts
+.DS_Store
