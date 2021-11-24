@@ -1,0 +1,19 @@
+{
+  "name": "hackday-8",
+  "version": "1.0.0",
+  "description": "Hack Day 8 Project",
+  "main": "index.js",
+  "scripts": {
+    "generate": "cmake -G Xcode"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JackNolan93/Hackday-8.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JackNolan93/Hackday-8/issues"
+  },
+  "homepage": "https://github.com/JackNolan93/Hackday-8#readme"
+}
