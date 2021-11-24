@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
 
 //==============================================================================
 class AudioPluginAudioProcessor : public juce::AudioProcessor
@@ -13,6 +14,9 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources () override;
+    
+    void setCutoff (float cutoff);
+    void setq (float q);
 
     bool isBusesLayoutSupported (const BusesLayout & layouts) const override;
 
@@ -45,4 +49,10 @@ public:
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
+    
+    juce::dsp::StateVariableTPTFilter<float> _svFilter;
+    juce::AudioParameterFloat * _cutoff;
+    juce::AudioParameterFloat * _q;
+    
+    float _prevCutoff = 0.0;
 };

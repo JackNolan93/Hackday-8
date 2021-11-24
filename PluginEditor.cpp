@@ -11,17 +11,22 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
-
+    
     addAndMakeVisible (_browserComponent);
     _browserComponent.setBounds (getLocalBounds ());
 
     _browserComponent.addScriptHandler (
-        "JaLeInterop", [] (juce::String body) { juce::Logger::writeToLog (body); });
+    "JaLeInterop", [this] (juce::String body)
+    {
+        processorRef.setCutoff (0.0001f);
+        juce::Logger::writeToLog (body);
+    });
+    
     _browserComponent.addScriptHandler (
         "JaLeInteropReturn", [] (juce::String body) { juce::Logger::writeToLog (body); });
 
-    juce::URL indexUrl (juce::File (
-        "/Users/leonpaterson-stephens/Documents/Development/Hackday-8/hackday-8-ui/build/index.html"));
+    juce::URL indexUrl (
+        juce::File ("/Users/jacknolan/Developer/Hackday-8/index.html"));
     _browserComponent.goToURL (indexUrl.toString (false));
 }
 
