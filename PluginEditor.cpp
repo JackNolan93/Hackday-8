@@ -12,14 +12,23 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     // editor's size to whatever you need it to be.
     setSize (400, 300);
 
-    addAndMakeVisible (_browserComponent);
+    //addAndMakeVisible (_browserComponent);
+    addAndMakeVisible (_button);
+    _button.setBounds (getLocalBounds ());
+    _button.onClick = [this] ()
+    {
+        _browserComponent.invokeScript ("fromApp()");
+    };
+    
     _browserComponent.setBounds (getLocalBounds ());
 
     _browserComponent.addScriptHandler (
         "JaLeInterop", [] (juce::String body) { juce::Logger::writeToLog (body); });
+    _browserComponent.addScriptHandler (
+        "JaLeInteropReturn", [] (juce::String body) { juce::Logger::writeToLog (body); });
 
     juce::URL indexUrl (
-        juce::File ("/Users/leonpaterson-stephens/Documents/Development/Hackday-8/index.html"));
+        juce::File ("/Users/jacknolan/Developer/Hackday-8/index.html"));
     _browserComponent.goToURL (indexUrl.toString (false));
 }
 

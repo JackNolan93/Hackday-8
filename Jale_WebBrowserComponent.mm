@@ -368,23 +368,9 @@ struct JaLeScriptHandler : public juce::ObjCClass<NSObject>
                                          WKScriptMessage * message)
     {
         juce::ignoreUnused (self, controller);
-
-        /*
-        juce::ignoreUnused (self, controller);
         juce::Logger::writeToLog (juce::nsStringToJuce (
-            [[NSString alloc] initWithFormat:@"body %@ name %@", message.body, message.name]));
+            [[NSString alloc] initWithFormat:@"JaLe Did recieve message: body %@ name %@", message.body, message.name]));
 
-        if ([message.name isEqualToString:@"JaLeInterop"])
-        {
-            juce::Logger::writeToLog ("did it");
-            [getWebView (self) evaluateJavaScript:@"fromApp();" completionHandler:nil];
-        }
-
-        if ([message.name isEqualToString:@"JaLeInteropReturn"])
-        {
-            juce::Logger::writeToLog ("returned it");
-        }
-         */
         WebBrowserComponent * browserComponent = getOwner (self);
 
         if (browserComponent->_handlers.contains (juce::nsStringToJuce (message.name)))
@@ -530,6 +516,11 @@ public:
         [webView.configuration.userContentController
             addScriptMessageHandler:scriptHandler
                                name:juce::juceStringToNS (handlerName)];
+    }
+    
+    void invokeScript (juce::String script)
+    {
+        [webView evaluateJavaScript:juce::juceStringToNS (script) completionHandler:nil];
     }
 
 private:
@@ -1043,4 +1034,9 @@ void WebBrowserComponent::addScriptHandler (juce::String handlerName,
 {
     _handlers.insert ({handlerName, handler});
     browser->addScriptHandler (handlerName);
+}
+
+void WebBrowserComponent::invokeScript (juce::String script)
+{
+    browser->invokeScript (script);
 }

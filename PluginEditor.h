@@ -19,6 +19,8 @@ private:
     // access the processor object that created it.
     AudioPluginAudioProcessor & processorRef;
     WebBrowserComponent _browserComponent;
+    
+    juce::TextButton _button { "Invoke" };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

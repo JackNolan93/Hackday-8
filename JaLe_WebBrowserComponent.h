@@ -46,6 +46,7 @@ public:
     void refresh ();
 
     void addScriptHandler (juce::String handlerName, std::function<void (juce::String)> handler);
+    void invokeScript (juce::String script);
 
     /** Clear cookies that the OS has stored for the WebComponents of this application */
     static void clearCookies ();
