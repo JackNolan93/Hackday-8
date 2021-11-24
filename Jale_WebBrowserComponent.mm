@@ -347,6 +347,26 @@ private:
     #endif
 };
 
+struct JaLeScriptHandler : public juce::ObjCClass<NSObject>
+{
+    JaLeScriptHandler ()
+        : ObjCClass<NSObject> ("JaLeScriptHandler")
+    {
+        addMethod (@selector (userContentController:didReceiveScriptMessage:),
+                   didRecieveScriptMessage,
+                   "v@:@");
+
+        registerClass ();
+    }
+
+    static void
+    didRecieveScriptMessage (id self, SEL, WKScriptMessage * scriptMessage)
+    {
+        juce::ignoreUnused (self, scriptMessage);
+        juce::Logger::writeToLog ("did it");
+    }
+};
+
 //==============================================================================
 class WebBrowserComponent::Pimpl
     #if JUCE_MAC
@@ -361,12 +381,19 @@ public:
     #if JUCE_MAC
         static WebViewKeyEquivalentResponder webviewClass;
         webView = (WKWebView *) webviewClass.createInstance ();
+        
+        WKWebViewConfiguration* webConfiguration = [[WKWebViewConfiguration alloc] init];
+        webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:webConfiguration];
+        
+        static JaLeScriptHandler jaleScriptHandler;
+        scriptHandler = [jaleScriptHandler.createInstance() init];
+        
+        [webView.configuration.userContentController addScriptMessageHandler:scriptHandler name:@"JaLeInterop"];
 
-        webView = [webView initWithFrame:NSMakeRect (0, 0, 100.0f, 100.0f)];
     #else
         webView = [[WKWebView alloc] initWithFrame:CGRectMake (0, 0, 100.0f, 100.0f)];
     #endif
-
+       
         static WebViewDelegateClass cls;
         webViewDelegate = [cls.createInstance () init];
         WebViewDelegateClass::setOwner (webViewDelegate, owner);
@@ -440,6 +467,7 @@ public:
 private:
     WKWebView * webView = nil;
     id webViewDelegate;
+    id scriptHandler;
 };
 
 #else

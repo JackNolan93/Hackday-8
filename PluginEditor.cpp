@@ -14,7 +14,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible (_browserComponent);
     _browserComponent.setBounds (getLocalBounds ());
-    _browserComponent.goToURL ("https://google.co.uk");
+        
+    juce::URL indexUrl (juce::File ("/Users/jacknolan/Developer/Hackday-8/index.html"));
+    _browserComponent.goToURL (indexUrl.toString (false));
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor ()

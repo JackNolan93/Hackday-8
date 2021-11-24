@@ -5,9 +5,8 @@
     <title>JaLe - Web</title>
 
     <script>
-        const handleButtonClick = () => {
-            console.log("Clicked button sending interop!");
-
+        function handleButtonClick () {
+            window.webkit.messageHandlers.JaLeInterop.postMessage("FirstMessage");
         };
     </script>
 </head>
